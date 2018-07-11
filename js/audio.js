@@ -1,6 +1,6 @@
 /**
  * The MIT License (MIT)
- * Copyright (c) 2015-2015 Daniel Sebastian Iliescu, http://dansil.net
+ * Copyright (c) 2015-2018 Daniel Sebastian Iliescu, http://dansil.net
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ function MakeAudioRequest()
 
 					var analyser = context.createAnalyser();
 					analyser.smoothingTimeConstant = 0.6;
-					analyser.fftSize = 512;
+					analyser.fftSize = 2048;
 
 					source = context.createBufferSource();
 					source.buffer = buffer;

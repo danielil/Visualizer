@@ -1,0 +1,27 @@
+{
+  "name": "visualizer",
+  "version": "1.0.0",
+  "description": "Audio Visualizer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielil/Visualizer.git"
+  },
+  "author": "Daniel Sebastian Iliescu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/danielil/Visualizer/issues"
+  },
+  "homepage": "https://github.com/danielil/Visualizer#readme",
+  "dependencies": {
+    "dat.gui": "^0.7.2",
+    "normalizecss": "^3.0.0",
+    "three": "^0.94.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.92.12"
+  }
+}
