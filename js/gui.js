@@ -21,185 +21,150 @@
  * SOFTWARE.
  */
 
-var propertiesVars;
-var audioOptionVars;
-var active;
+class GUI {
+	constructor() {
+		this.file = null;
 
-/**
- * Creates the dat.GUI interface with the global object containers.
- */
-function CreateGUI()
-{
-	propertiesVars =
-	{
-		"Scene": "Cubes",
-		"Visual Elements": 128,
-		"Audio Sensitivity": 2048,
-		"Reset": Reset
-	};
+		this.propertiesVars =
+			{
+				"Scene": "Cubes",
+				"Visual Elements": 128,
+				"Audio Sensitivity": 2048,
+				"Reset": () => { this.reset() }
+			};
 
-	audioOptionVars =
-	{
-		"Load": LoadAudio,
-		"Play": PlayAudio,
-		"Stop": StopAudio
-	};
+		this.audioOptionVars =
+			{
+				"Load": () => { this.load() },
+				"Play": () => { this.play() },
+				"Stop": () => { this.stop() }
+			};
 
-	var gui = new dat.GUI();
+		var internalGUI = new dat.GUI();
 
-	var properties = gui.addFolder("Properties");
-	properties.add(propertiesVars, "Scene", ["Cubes"]);
-	properties.add(propertiesVars, "Visual Elements", [16, 32, 64, 128, 256]);
-	properties.add(propertiesVars, "Audio Sensitivity", [512, 1024, 2048, 4096, 8192, 16384]);
-	properties.add(propertiesVars, "Reset");
-	properties.__controllers[1].onChange(function(value)
-	{
-		COUNT = value;
-		SIZE = (CONTAINER_LENGTH ) / COUNT;
-	});
-
-	properties.__controllers[2].onChange(function(value)
-	{
-		scriptProcessorCount = value;
-	});
-
-	var audioOptions = gui.addFolder("Audio Options");
-	audioOptions.add(audioOptionVars, "Load");
-	audioOptions.add(audioOptionVars, "Play");
-	audioOptions.add(audioOptionVars, "Stop");
-
-	properties.open();
-	audioOptions.open();
-}
-
-/*
- * Loads the audio and parse it and then stores the frequency data into an array.
- */
-function LoadAudio()
-{
-	var audioForm = document.getElementById("audio-form");
-
-	if (audioForm)
-	{
-		document.getElementById("input-submit").removeEventListener("onclick");
-		document.getElementById("input-cancel").removeEventListener("onclick");
-		document.body.removeChild(audioForm);
-	}
-	else
-	{
-		audioForm = document.createElement("form");
-		audioForm.id = "audio-form";
-
-		var inputFile = document.createElement("input");
-		inputFile.id = "input-file";
-		inputFile.setAttribute("type", "file");
-		inputFile.setAttribute("name", "file");
-
-		var inputSubmit = document.createElement("button");
-		inputSubmit.id = "input-submit";
-		inputSubmit.setAttribute("type", "button");
-		inputSubmit.textContent = "Submit";
-
-		var inputCancel = document.createElement("button");
-		inputCancel.id = "input-cancel";
-		inputCancel.setAttribute("type", "button");
-		inputCancel.textContent = "Cancel";
-
-		audioForm.appendChild(inputFile);
-		audioForm.appendChild(inputSubmit);
-		audioForm.appendChild(inputCancel);
-		document.body.appendChild(audioForm);
-
-		inputSubmit.addEventListener("click", function(event)
-								   {
-			event.stopPropagation();
-			ReadFile();
+		var properties = internalGUI.addFolder("Properties");
+		properties.add(this.propertiesVars, "Scene", ["Cubes"]);
+		properties.add(this.propertiesVars, "Visual Elements", [16, 32, 64, 128, 256]);
+		properties.add(this.propertiesVars, "Audio Sensitivity", [512, 1024, 2048, 4096, 8192, 16384]);
+		properties.add(this.propertiesVars, "Reset");
+		properties.__controllers[1].onChange((value) => {
+			COUNT = value;
+			SIZE = (CONTAINER_LENGTH) / COUNT;
 		});
 
-		inputCancel.addEventListener("click", function(event)
-		{
+		properties.__controllers[2].onChange((value) => {
+			scriptProcessorCount = value;
+		});
+
+		var audioOptions = internalGUI.addFolder("Audio Options");
+		audioOptions.add(this.audioOptionVars, "Load");
+		audioOptions.add(this.audioOptionVars, "Play");
+		audioOptions.add(this.audioOptionVars, "Stop");
+
+		properties.open();
+		audioOptions.open();
+	}
+
+	load() {
+		var audioForm = document.getElementById("audio-form");
+
+		if (audioForm) {
 			document.getElementById("input-submit").removeEventListener("onclick");
 			document.getElementById("input-cancel").removeEventListener("onclick");
 			document.body.removeChild(audioForm);
-		});
+		}
+		else {
+			audioForm = document.createElement("form");
+			audioForm.id = "audio-form";
+
+			var inputFile = document.createElement("input");
+			inputFile.id = "input-file";
+			inputFile.setAttribute("type", "file");
+			inputFile.setAttribute("name", "file");
+
+			var inputSubmit = document.createElement("button");
+			inputSubmit.id = "input-submit";
+			inputSubmit.setAttribute("type", "button");
+			inputSubmit.textContent = "Submit";
+
+			var inputCancel = document.createElement("button");
+			inputCancel.id = "input-cancel";
+			inputCancel.setAttribute("type", "button");
+			inputCancel.textContent = "Cancel";
+
+			audioForm.appendChild(inputFile);
+			audioForm.appendChild(inputSubmit);
+			audioForm.appendChild(inputCancel);
+			document.body.appendChild(audioForm);
+
+			inputSubmit.addEventListener("click", (event) => {
+				event.stopPropagation();
+			});
+
+			inputSubmit.addEventListener("click", () => {
+				var input = document.getElementById("input-file");
+				var reader = new FileReader();
+
+				reader.onload = () => {
+					this.file = reader.result;
+
+					document.getElementById("input-submit").removeEventListener("onclick", () => { });
+
+					var audioForm = document.getElementById("audio-form");
+					document.body.removeChild(audioForm);
+				};
+
+				reader.readAsArrayBuffer(input.files[0]);
+			});
+
+			inputCancel.addEventListener("click", (event) => {
+				document.getElementById("input-submit").removeEventListener("onclick");
+				document.getElementById("input-cancel").removeEventListener("onclick");
+				document.body.removeChild(audioForm);
+			});
+		}
 	}
 
+	play(evt) {
+		if (this.file == null) {
+			alert("Please Load an audio file");
+			evt.stopPropagation();
+		}
+
+		processor.process(
+			this.file,
+			this.propertiesVars["Audio Sensitivity"],
+			createLoadingBanner,
+			removeLoadingBanner);
+
+		this.reset();
+	}
+
+	stop() {
+		processor.stop();
+	}
+
+	reset() {
+		document.body.removeChild(renderer.domElement);
+		Clear();
+		CreateScene();
+		RenderTheme();
+		render();
+	}
 }
-/*
- * Reads the audio file using given by the system filesystem.
- */
-function ReadFile()
-{
-	if (active)
-	{
-		active = false;
 
-		source.stop();
-	}
+function createLoadingBanner() {
+	var banner = document.createElement("div");
+	banner.id = "banner-container";
 
-	var input = document.getElementById("input-file");
-	var reader = new FileReader();
+	var bannerText = document.createElement("span");
+	bannerText.id = "banner-text";
+	bannerText.textContent = "Loading...";
 
-	reader.onload = function()
-	{
-		file = reader.result;
-
-		fileName = input.files[0].name;
-
-		document.getElementById("input-submit").removeEventListener("onclick", function(){});
-
-		var audioForm = document.getElementById("audio-form");
-		document.body.removeChild(audioForm);
-	};
-
-	reader.readAsDataURL(input.files[0]);
+	banner.appendChild(bannerText);
+	document.body.appendChild(banner);
 }
 
-/*
- * Play and stop the file.
- */
-function PlayAudio(evt)
-{
-
-	if(file == null)
-	{
-		alert("Please Load an audio file");
-		evt.stopPropagation();
-	}
-
-	if (active)
-	{
-		active = false;
-		source.stop();
-	}
-	else
-	{
-		active = true;
-		MakeAudioRequest();
-		Reset();
-	}
-}
-
-/*
- * Resets member data ; used when switching scene as well as for manual reset when changing variables.
- */
-function Reset()
-{
-	document.body.removeChild( renderer.domElement );
-	Clear();
-	CreateScene();
-	RenderTheme();
-	render();
-}
-
-/*
- * Stops the file playback.
- */
-function StopAudio()
-{
-	if (active)
-	{
-		active = false;
-		source.stop();
-	}
+function removeLoadingBanner() {
+	document.body.removeChild(document.getElementById("banner-container"));
 }

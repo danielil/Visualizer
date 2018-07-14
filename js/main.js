@@ -23,6 +23,8 @@
 
 "use strict";
 
+var processor = new AudioProcessor();
+
 window.addEventListener("load", Init);
 
 var scene;
@@ -32,19 +34,19 @@ var renderer;
 var CUBE_MARGIN = 5;
 var COUNT = 128;
 var CONTAINER_LENGTH = window.innerWidth;
-var EXTREME_X = - (window.innerWidth / 1.4);
-var SIZE = (CONTAINER_LENGTH) / COUNT;
+var EXTREME_X = -(window.innerWidth / 1.4);
+var SIZE = CONTAINER_LENGTH / COUNT;
 
 var cubes = [];
-
+var gui;
 
 /*
  * Initialize the canvas and GUI elements.
  */
 function Init() {
-	CreateGUI();
 	GenerateStaticVisualization();
 	RenderTheme();
+	gui = new GUI();
 }
 /*
  * Generate the static elements of the scene like the camera and scene properties.
@@ -67,6 +69,7 @@ function RenderTheme() {
 function CreateScene() {
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+
 	camera.position.set(0, 500, CONTAINER_LENGTH);
 	camera.lookAt(0, 0, 0);
 
@@ -82,7 +85,9 @@ function CreateScene() {
 	renderer.gammaOutput = true;
 	renderer.shadowMapEnabled = true;
 	renderer.antialias = true;
+
 	camera.updateProjectionMatrix();
+
 	document.body.appendChild(renderer.domElement);
 }
 
@@ -146,7 +151,7 @@ function Clear() {
 */
 function AnimateCubeTheme() {
 	for (var i = 0; i < cubes.length; i++) {
-		var audioScale = elements[i * (elements.length / cubes.length)] / 4;
+		var audioScale = processor.elements[i * (processor.elements.length / cubes.length)] / 4;
 
 		if (audioScale < 1) {
 			audioScale = 1;
