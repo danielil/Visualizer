@@ -28,20 +28,22 @@ class AudioProcessor {
 
 		this.__smoothingTimeConstant = 0.6;
 		this.__fastFourierTransformSize = 2048;
+
+		this.__active = false;
 	}
 
 	process(file, audioSensitivity, preLoadAction, postLoadAction) {
 		preLoadAction();
-		
-		let context = new AudioContext();
+
+		const context = new AudioContext();
 
 		context.decodeAudioData(file).then(
 			(buffer) => {
-				let scriptProcessor = context.createScriptProcessor(audioSensitivity);
+				const scriptProcessor = context.createScriptProcessor(audioSensitivity);
 				scriptProcessor.buffer = buffer;
 				scriptProcessor.connect(context.destination);
 
-				let analyser = context.createAnalyser();
+				const analyser = context.createAnalyser();
 				analyser.smoothingTimeConstant = this.__smoothingTimeConstant;
 				analyser.fftSize = this.__fastFourierTransformSize;
 
@@ -69,11 +71,17 @@ class AudioProcessor {
 	}
 
 	start() {
-		this.__source.start();
+		if (!this.__active) {
+			this.__source.start();
+			this.__active = true;
+		}
 	}
 
 	stop() {
-		this.__source.stop();
+		if (this.__active) {
+			this.__source.stop();
+			this.__active = false;
+		}
 	}
 
 	get elements() {
